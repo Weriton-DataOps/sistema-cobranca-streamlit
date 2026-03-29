@@ -23,7 +23,7 @@ def Menu():
 
 @st.cache_data
 def banco(atualizar_queries=False, atualizar_somente_lotes=False):
-    caminho = "data/BASE FA.xlsx"
+    caminho = "CFA/data/BASE FA.xlsx"
 
     if atualizar_queries or atualizar_somente_lotes:
         
