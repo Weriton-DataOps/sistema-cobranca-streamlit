@@ -30,13 +30,13 @@ def banco(atualizar_queries=False, atualizar_somente_lotes=False):
 
         try:
             if atualizar_queries:
-                st.warning("Função desabilitada na versão web")
+                st.warning("Função desabilitada na versão Portifólio Web")
             elif atualizar_somente_lotes:
-                st.warning("Função desabilitada na versão web")
+                st.warning("Função desabilitada na versão Portifólio Web")
 
-            st.warning("Função desabilitada na versão web")
+            st.warning("Função desabilitada na versão Portifólio Web")
         finally:
-            st.warning("Função desabilitada na versão web")
+            st.warning("Função desabilitada na versão Portifólio Web")
 
     # Sempre lê apenas a aba ReceberRecebidas
     df_receberRecebida = pd.read_excel(caminho, sheet_name="ReceberRecebidas")
