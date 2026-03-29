@@ -3,7 +3,6 @@ import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 from datetime import datetime
 import os
-import pythoncom
 import time
 import io
 
@@ -231,30 +230,6 @@ def tabelaPrincipal(df_merged,consultor):
             )
             st.warning("Edição desabilitada na versão web")
                 
-
-
-def atualizar_query_excel():
-    pythoncom.CoInitialize()
-    try:
-        st.warning("Edição desabilitada na versão web")
-        
-
-        atualizou = False
-        if not atualizou:
-            st.warning("⚠️ Nenhuma conexão correspondente à aba 'ReceberRecebidas' foi encontrada.")
-        if atualizou:
-            st.info("🔄 Query atualizada com sucesso!")
-    except Exception as e:
-        st.error(f"❌ Falha ao atualizar a query: {e}")
-    finally:
-        try:
-            st.warning("Edição desabilitada na versão web")
-        except:
-            pass
-        try:
-            st.warning("Edição desabilitada na versão web")
-        except:
-            pass
 
 
 def formatar_tabela_personalizada(df):
