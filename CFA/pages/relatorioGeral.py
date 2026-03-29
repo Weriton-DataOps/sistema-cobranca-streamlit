@@ -27,12 +27,12 @@ def Menu():
 
 @st.cache_data
 def dados_lote():
-    pasta_base = "data/LOTES"
+    pasta_base = "CFA/data/LOTES"
     subpastas = ["ATIVOS", "EXPIRADOS"]
     dataframes = []
 
     for subpasta in subpastas:
-        pasta = "data/LOTES" #os.path.join(pasta_base, subpasta)
+        pasta = os.path.join(pasta_base, subpasta)
         for arquivo in os.listdir(pasta):
             if arquivo.endswith('.xlsx'):
                 caminho_arquivo = os.path.join(pasta, arquivo)
