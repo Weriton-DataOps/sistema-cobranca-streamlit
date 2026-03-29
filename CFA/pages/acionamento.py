@@ -34,8 +34,6 @@ def dados_lote(atualizar=False):  # Parâmetro dummy só para invalidar cache
 
     return pd.concat(dataframes, ignore_index=True)
 
-pd.read_excel
-
 @st.cache_data(show_spinner=False)
 def carregar_base_contrato(atualizar=False):
     return pd.read_excel("CFA/data/BASE FA.xlsx", sheet_name="Contratos")
