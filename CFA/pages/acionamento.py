@@ -2,12 +2,9 @@ import pandas as pd
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 from datetime import datetime
-import win32com.client as win32
 import os
-import xlwings as xw
 import pythoncom
 import time
-import win32com.client
 import io
 
 st.set_page_config(
@@ -136,85 +133,9 @@ def arquivo_em_uso(caminho):
         return True
 
 def identificar_usuario_arquivo(caminho):
-    try:
-        network = win32com.client.Dispatch("WScript.Network")
-        excel_app = win32com.client.Dispatch("Excel.Application")
-        for wb in excel_app.Workbooks:
-            if caminho.lower() in wb.FullName.lower():
-                return network.UserName
-    except:
-        return None
+    st.warning("Edição desabilitada na versão web")
 
-
-def salvar_detalhes_editados(detalhes_editados, caminho_arquivo,consultor):
-    pythoncom.CoInitialize()
-    tempo_max_espera = 60
-    tempo_esperado = 0
-    intervalo_espera = 2
-    mensagem_status = st.empty()
-
-    while arquivo_em_uso(caminho_arquivo):
-        usuario = identificar_usuario_arquivo(caminho_arquivo)
-        mensagem_status.warning(f"⏳ Aguardando liberação... Arquivo em uso por: **{usuario or 'usuário desconhecido'}**.")
-        time.sleep(intervalo_espera)
-        tempo_esperado += intervalo_espera
-        if tempo_esperado >= tempo_max_espera:
-            mensagem_status.error(f"❌ Tempo excedido. Ainda em uso por **{usuario or 'usuário desconhecido'}**.")
-            return
-
-    try:
-        app = xw.App(visible=False)
-        wb = app.books.open(caminho_arquivo)
-        ws = wb.sheets['Lote']
-
-        header = ws.range("A1").expand("right").value
-        col_map = {col.strip(): idx for idx, col in enumerate(header)}
-        novas_colunas = ['StatusAc.', 'Data Rec.', 'Valor Rec.', 'MeioPag.', 'Valor EmDia', 'Observação']
-
-        for col in novas_colunas:
-            if col not in col_map:
-                nova_col_idx = len(header)
-                ws.range((1, nova_col_idx + 1)).value = col
-                col_map[col] = nova_col_idx
-                header.append(col)
-
-        valores_ws = ws.range("A2").expand("table").value
-
-        # Garante que cada linha tenha o mesmo número de colunas do header
-        valores_ws_corrigido = [linha + [None] * (len(header) - len(linha)) if len(linha) < len(header) else linha[:len(header)] for linha in valores_ws]
-
-        df_excel = pd.DataFrame(valores_ws_corrigido, columns=header)
-
-
-        atualizados = 0
-        for _, row in detalhes_editados.iterrows():
-            id_parcela = str(row['Id']).strip()
-            idx = df_excel[df_excel['Id'].astype(str).str.strip() == id_parcela].index
-            if not idx.empty:
-                linha_idx = idx[0] + 2
-                for col in novas_colunas:
-                    ws.range((linha_idx, col_map[col] + 1)).value = row[col]
-                atualizados += 1
-
-        wb.save()
-        wb.close()
-        app.quit()
-        st.session_state['chave_atualizacao'] = time.time()
-        df_lote = dados_lote(atualizar=time.time())  # Lê arquivos da pasta "LOTES/ATIVOS"
-        df_merged = carregar_dados(df_lote, consultor)
-        if atualizados:
-            mensagem_status.success("✅ Dados salvos com sucesso!")
-            st.rerun()
-        else:
-            mensagem_status.warning("⚠️ Nenhuma linha foi atualizada. IDs podem estar incorretos.")
-
-    except Exception as e:
-        mensagem_status.error(f"❌ Erro ao salvar: {e}")
-    finally:
-        try: wb.close()
-        except: pass
-        try: app.quit()
-        except: pass
+    
 
 
 def tabelaPrincipal(df_merged,consultor):
@@ -308,130 +229,30 @@ def tabelaPrincipal(df_merged,consultor):
                 use_container_width=True,
                 hide_index=True
             )
-            if st.button("💾 Salvar Atualizações"):
-                arquivo_origem = df_merged[df_merged['Passaporte'] == passaporte]['arquivo_origem'].values[0]
-                caminho_arquivo = os.path.join(
-                    "data/...",
-                    arquivo_origem
-                )
-                salvar_detalhes_editados(detalhes_editados, caminho_arquivo,consultor)
-
-
-def atualizar_pagamentos():
-
-    atualizar_query_excel()
-    # Inicializa o COM para trabalhar com Excel
-    pythoncom.CoInitialize()
-
-    # Carrega os dados da aba ReceberRecebidas
-    try:
-        df_recebidas = pd.read_excel("data/Recebimento.xlsx", sheet_name="ReceberRecebidas")
-        df_recebidas = df_recebidas[["Id", "ValorBaixado"]].dropna()
-    except Exception as e:
-        st.error(f"❌ Erro ao carregar aba ReceberRecebidas: {e}")
-        st.stop()
-
-    pasta = "data/..."
-    arquivos = [arq for arq in os.listdir(pasta) if arq.endswith(".xlsx")]
-
-    for arquivo in arquivos:
-        caminho = os.path.join(pasta, arquivo)
-
-        def arquivo_em_uso(caminho):
-            try:
-                with open(caminho, 'a'):
-                    return False
-            except:
-                return True
-
-        tempo_max_espera = 60
-        tempo_esperado = 0
-        while arquivo_em_uso(caminho):
-            time.sleep(2)
-            tempo_esperado += 2
-            if tempo_esperado >= tempo_max_espera:
-                st.warning(f"⚠️ Arquivo em uso: {arquivo}. Pulando...")
-                continue
-
-        try:
-            app = xw.App(visible=False)
-            wb = app.books.open(caminho)
-            ws = wb.sheets['Lote']
-
-            # Mapeia colunas
-            header = ws.range("A1").expand("right").value
-            col_map = {col.strip(): idx for idx, col in enumerate(header)}
-            if 'ValorBaixado' not in col_map:
-                nova_coluna_idx = len(header)
-                ws.range((1, nova_coluna_idx + 1)).value = 'ValorBaixado'
-                col_map['ValorBaixado'] = nova_coluna_idx
-                header.append('ValorBaixado')
-            if 'Id' not in col_map or 'ValorBaixado' not in col_map:
-                st.warning(f"❗ Colunas 'Id' ou 'ValorBaixado' não encontradas em {arquivo}.")
-                wb.close()
-                continue
-
-            dados = ws.range("A2").expand("table").value
-            linhas_alteradas = 0
-            df_recebidas['Id'] = df_recebidas['Id'].astype(str).str.strip()
-            for i, linha in enumerate(dados):
-                id_linha = str(linha[col_map['Id']]).strip()
-                id_linha = linha[col_map['Id']]
-                if id_linha in df_recebidas['Id'].values:
-                    novo_valor = df_recebidas[df_recebidas['Id'] == id_linha]['ValorBaixado'].values[0]
-                    col_idx_excel = col_map['ValorBaixado'] + 1
-                    ws.range((i + 2, col_idx_excel)).value = novo_valor
-                    linhas_alteradas += 1
-
-            wb.save()
-            wb.close()
-            app.quit()
-
-            st.success(f"✅ {linhas_alteradas} valores atualizados em {arquivo}")
-
-        except Exception as e:
-            st.error(f"❌ Erro ao processar {arquivo}: {e}")
-            try: wb.close()
-            except: pass
-            try: app.quit()
-            except: pass
+            st.warning("Edição desabilitada na versão web")
+                
 
 
 def atualizar_query_excel():
     pythoncom.CoInitialize()
     try:
-        excel = win32.gencache.EnsureDispatch("Excel.Application")
-        wb = excel.Workbooks.Open(os.path.abspath("Recebimento.xlsx"))
-        excel.Visible = False
+        st.warning("Edição desabilitada na versão web")
+        
 
         atualizou = False
-        for connection in wb.Connections:
-            # Ajuste esse nome para o exato nome da consulta ligada à aba ReceberRecebidas
-            if "ReceberRecebidas" in connection.Name:
-                connection.Refresh()
-                atualizou = True
-                break
-
         if not atualizou:
             st.warning("⚠️ Nenhuma conexão correspondente à aba 'ReceberRecebidas' foi encontrada.")
-
-        excel.CalculateUntilAsyncQueriesDone()
-        wb.Save()
-        wb.Close(False)
-        excel.Quit()
-
         if atualizou:
             st.info("🔄 Query atualizada com sucesso!")
-
     except Exception as e:
         st.error(f"❌ Falha ao atualizar a query: {e}")
     finally:
         try:
-            wb.close()
+            st.warning("Edição desabilitada na versão web")
         except:
             pass
         try:
-            excel.quit()
+            st.warning("Edição desabilitada na versão web")
         except:
             pass
 
@@ -572,7 +393,6 @@ def show_acionamento():
 
     if st.button("📥 Atualizar Pagamentos"):
         with st.spinner("Atualizando ..."):
-            atualizar_pagamentos()
             chave = time.time()  # força atualização do cache
             df_lote = dados_lote(atualizar=chave)
             df_merged = carregar_dados(df_lote, consultor)
@@ -587,5 +407,3 @@ def show_acionamento():
 
 
 show_acionamento()
-
-
