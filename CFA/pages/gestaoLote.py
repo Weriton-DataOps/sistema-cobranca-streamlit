@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import datetime 
 from streamlit_tags import st_tags
 import os
-#import win32com.client as win32
 import shutil
 # streamlit_app_title: 📊 Relatório Geral
 import streamlit as st
@@ -27,25 +26,17 @@ def banco(atualizar_queries=False, atualizar_somente_lotes=False):
     caminho = "data/BASE FA.xlsx"
 
     if atualizar_queries or atualizar_somente_lotes:
-        excel = win32.DispatchEx('Excel.Application')
-        excel.Visible = False
-        wb = excel.Workbooks.Open(os.path.abspath(caminho))
+        
 
         try:
             if atualizar_queries:
-                wb.RefreshAll()
-                excel.CalculateUntilAsyncQueriesDone()
+                st.warning("Função desabilitada na versão web")
             elif atualizar_somente_lotes:
-                for conn in wb.Connections:
-                    if "LOTE" in conn.Name.upper():
-                        conn.OLEDBConnection.BackgroundQuery = False
-                        conn.OLEDBConnection.Refresh()
-                excel.CalculateUntilAsyncQueriesDone()
+                st.warning("Função desabilitada na versão web")
 
-            wb.Save()
+            st.warning("Função desabilitada na versão web")
         finally:
-            wb.Close(False)
-            excel.Quit()
+            st.warning("Função desabilitada na versão web")
 
     # Sempre lê apenas a aba ReceberRecebidas
     df_receberRecebida = pd.read_excel(caminho, sheet_name="ReceberRecebidas")
