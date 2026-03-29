@@ -307,7 +307,7 @@ def show_lote():
         df_receberRecebida = banco()
 
 
-    painel_lotes_form("data/...")
+    painel_lotes_form("CFA/data/LOTES")
     resumo_receberRecebidas = data_receberRecebidas(df_receberRecebida)
     if resumo_receberRecebidas.empty:
         st.info("✅ Nenhuma parcela pendente de designação encontrada.")
