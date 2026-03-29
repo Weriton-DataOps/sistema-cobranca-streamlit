@@ -32,7 +32,7 @@ def dados_lote():
     dataframes = []
 
     for subpasta in subpastas:
-        pasta = os.path.join(pasta_base, subpasta)
+        pasta = "data/LOTES" #os.path.join(pasta_base, subpasta)
         for arquivo in os.listdir(pasta):
             if arquivo.endswith('.xlsx'):
                 caminho_arquivo = os.path.join(pasta, arquivo)
