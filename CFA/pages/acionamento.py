@@ -130,9 +130,7 @@ def arquivo_em_uso(caminho):
         return True
 
 def identificar_usuario_arquivo(caminho):
-    st.warning("Edição desabilitada na versão web")
-
-    
+    st.warning("Edição desabilitada na versão Portifólio Web")
 
 
 def tabelaPrincipal(df_merged,consultor):
@@ -226,7 +224,7 @@ def tabelaPrincipal(df_merged,consultor):
                 use_container_width=True,
                 hide_index=True
             )
-            st.warning("Edição desabilitada na versão web")
+            st.warning("Edição desabilitada na versão Portifólio Web")
                 
 
 
