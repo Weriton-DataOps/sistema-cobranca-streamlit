@@ -2,11 +2,9 @@ import pandas as pd
 from datetime import datetime 
 from streamlit_tags import st_tags
 import os
-import win32com.client as win32
 import shutil
 import numpy as np
 from pathlib import Path
-# streamlit_app_title: 🧾 Gestão de Lote
 import streamlit as st
 
 
