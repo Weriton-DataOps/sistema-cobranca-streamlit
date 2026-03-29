@@ -4,3 +4,4 @@ numpy
 openpyxl
 streamlit-aggrid
 streamlit-tags
+xlsxwriter
