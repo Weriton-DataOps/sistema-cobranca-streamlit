@@ -14,7 +14,7 @@ st.set_page_config(
 
 @st.cache_data(show_spinner=False)
 def dados_lote(atualizar=False):  # Parâmetro dummy só para invalidar cache
-    pasta = "data/LOTES/ATIVOS"
+    pasta = "CFA/data/LOTES/ATIVOS"
     dataframes = []
     arquivos_validos = [arq for arq in os.listdir(pasta) if arq.endswith('.xlsx')]
 
@@ -38,7 +38,7 @@ pd.read_excel
 
 @st.cache_data(show_spinner=False)
 def carregar_base_contrato(atualizar=False):
-    return pd.read_excel("data/BASE FA.xlsx", sheet_name="Contratos")
+    return pd.read_excel("CFA/data/BASE FA.xlsx", sheet_name="Contratos")
 
 def carregar_dados(df_lote, consultor):
     chave = st.session_state.get("chave_atualizacao", False)
